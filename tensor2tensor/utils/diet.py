@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2017 The Tensor2Tensor Authors.
+# Copyright 2018 The Tensor2Tensor Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ def diet_adam_optimizer_params():
     a hyperparameters object.
   """
   return tf.contrib.training.HParams(
-      quantize=int(True),  # use 16-bit fixed-point
+      quantize=True,  # use 16-bit fixed-point
       quantization_scale=10.0 / tf.int16.max,
       optimizer="DietAdam",
       learning_rate=1.0,
@@ -46,7 +46,7 @@ def diet_adam_optimizer_params():
       epsilon=1e-10,
       beta1=0.0,  # we can save memory if beta1=0
       beta2=0.98,
-      factored_second_moment_accumulator=int(True),  # this saves memory
+      factored_second_moment_accumulator=True,  # this saves memory
   )
 
 
@@ -54,7 +54,7 @@ def diet_expert(x, hidden_size, params):
   """A two-layer feed-forward network with relu activation on hidden layer.
 
   Uses diet variables.
-  Recompuets hidden layer on backprop to save activation memory.
+  Recomputes hidden layer on backprop to save activation memory.
 
   Args:
     x: a Tensor with shape [batch, io_size]
@@ -120,7 +120,7 @@ class DietAdamOptimizer(DietVariableOptimizer):
 
   Diet variables should be created with the
   DietAdamOptimizer.get_variable() method.  The resulting variables
-  have extra fields pointing to the otpimizer and to the accumulator
+  have extra fields pointing to the optimizer and to the accumulator
   slots.
 
   The variable is kept in quantized form, so you need to call
@@ -135,7 +135,7 @@ class DietAdamOptimizer(DietVariableOptimizer):
   diet_expert() for an example of how all of this is done.
 
   To facilitate fixed-point quantization and to make it easier to
-  choose a learning rate, all varaibles are initialized with unit
+  choose a learning rate, all variables are initialized with unit
   normal initialization.  If you want smaller values, downscale on the
   outside.
   """
@@ -185,7 +185,7 @@ class DietAdamOptimizer(DietVariableOptimizer):
                           global_step**-0.5)
     else:
       assert params.learning_rate_decay_scheme == "none"
-      lrate *= tf.minumum(global_step / params.learning_rate_warmup_steps, 1.0)
+      lrate *= tf.minimum(global_step / params.learning_rate_warmup_steps, 1.0)
 
     # compute adjustment due to second moment
     slots = params.slots[var.op.name]
@@ -243,7 +243,7 @@ def _quantize(x, params, randomize=True):
   abs_x = tf.abs(x)
   sign_x = tf.sign(x)
   y = abs_x / params.quantization_scale
-  y = tf.floor(y + tf.random_uniform(tf.shape(x)))
+  y = tf.floor(y + tf.random_uniform(common_layers.shape_list(x)))
   y = tf.minimum(y, tf.int16.max) * sign_x
   q = tf.bitcast(tf.cast(y, tf.int16), tf.float16)
   return q

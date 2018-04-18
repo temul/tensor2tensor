@@ -5,7 +5,7 @@ training.
 
 T2T uses TensorFlow Estimators and so distributed training is configured with
 the `TF_CONFIG` environment variable that is read by the
-[RunConfig](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/learn/python/learn/estimators/run_config.py)
+[RunConfig](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/estimator/run_config.py)
 along with a set of flags.
 
 ## `TF_CONFIG`
@@ -68,7 +68,7 @@ For example:
 TF_CONFIG=$JOB_TF_CONFIG t2t-trainer $JOB_FLAGS --model=transformer ...
 ```
 
-Modify the `--worker_gpu` and `--ps_gpu` flags, which specify how many gpus are
+Modify the `--worker_gpu` and `--ps_gpu` flags, which specify how many GPUs are
 on each master and ps, respectively, as needed for your machine/cluster setup.
 
 ## Command-line flags for eval jobs
